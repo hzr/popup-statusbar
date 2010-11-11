@@ -1,0 +1,6 @@
+<widget xmlns="http://www.w3.org/ns/widgets" version="0.1" id="hasather.net/popup-statusbar">
+  <name>Popup statusbar</name>
+  <description>A popup statusbar – Chrome style.</description>
+  <icon src="statusbar.png" width="64" height="64"/>
+  <icon src="statusbar_small.png" width="18" height="18"/>
+</widget>
