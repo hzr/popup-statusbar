@@ -18,7 +18,7 @@ function PopupStatusbar() {
             "font: 13px sans-serif",
             "background: #ddd",
             "color: #000",
-            "padding: 2px",
+            "padding: 2px 4px",
             "box-sizing: border-box",
             "border: 0 solid #999",
             "border-width: 1px 1px 0 0",
