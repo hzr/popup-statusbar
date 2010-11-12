@@ -164,6 +164,12 @@ window.addEventListener("DOMContentLoaded", function(event) {
     // Frames are problematic, don't do anything for the time being
     if (window != window.top) { return; }
     var statusbar = new PopupStatusbar();
-    document.body.addEventListener("mouseover", statusbar.show.bind(statusbar), false);
+    var show_bound = statusbar.show.bind(statusbar);
+    document.body.addEventListener("mouseover", show_bound, false);
+
+    opera.extension.addEventListener("disconnect", function() {
+        statusbar._removeElement();
+        document.body.removeEventListener("mouseover", show_bound, false);
+    }, false);
 }, false);
 
