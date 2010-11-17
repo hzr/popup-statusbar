@@ -145,7 +145,9 @@ function PopupStatusbar() {
             // Setting display before removing is a workaround for a reflow bug
             // where the statusbar gets stuck on the page if it's too short.
             var ele = document.getElementById(ID);
-            ele.style.display = "none !important";
+            if (ele) {
+                ele.style.display = "none !important";
+            }
             setTimeout(this._removeElement.bind(this), 0);
             this._isExpanded = false;
         }.bind(this), HIDE_TIMEOUT);
