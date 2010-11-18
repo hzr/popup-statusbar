@@ -163,6 +163,16 @@ function PopupStatusbar() {
 }
 
 window.addEventListener("DOMContentLoaded", function(event) {
+    // Temporary until Opera has a proper implementation
+    var slice = Array.prototype.slice;
+    Function.prototype.bind = function(context) {
+        var method = this;
+        var args = slice.call(arguments, 1);
+        return function() {
+            return method.apply(context, args.concat(slice.call(arguments, 0)));
+        };
+    };
+
     // Frames are problematic, don't do anything for the time being
     if (window != window.top) { return; }
     var statusbar = new PopupStatusbar();
