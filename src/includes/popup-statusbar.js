@@ -13,6 +13,8 @@ function PopupStatusbar() {
         "base": [
             "position: fixed",
             "z-index: 2147483647",
+            "top: auto",
+            "right: auto",
             "bottom: 0",
             "left: 0",
             "font: 13px sans-serif",
