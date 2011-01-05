@@ -43,7 +43,7 @@ function PopupStatusbar() {
             "border-color: #798999",
             "background: #e0ebf8",
             "color: #0c0c0d",
-            "text-shadow 0 1px #f2f7fc"
+            "text-shadow: 0 1px #f2f7fc"
         ],
         "mac": [
             "font: 11px 'Lucida Grande'",
