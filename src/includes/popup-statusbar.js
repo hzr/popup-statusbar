@@ -30,7 +30,8 @@ function PopupStatusbar() {
             "text-overflow: ellipsis",
             "-o-transition: opacity .3s, max-width .3s",
             /*"transition: opacity .3s, max-width .3s",*/
-            "text-shadow: 0 1px rgba(255, 255, 255, .5)"
+            "text-shadow: 0 1px rgba(255, 255, 255, .5)",
+            "direction: ltr"
         ],
 
         // Platform specific styling, lots of guesswork going on here
