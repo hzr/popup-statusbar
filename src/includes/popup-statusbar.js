@@ -17,6 +17,7 @@ function PopupStatusbar() {
             "right: auto",
             "bottom: 0",
             "left: 0",
+            "height: auto",
             "font: 13px sans-serif",
             "background: #ddd",
             "color: #000",
