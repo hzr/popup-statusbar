@@ -104,7 +104,12 @@ function PopupStatusbar() {
                                                         ? "max-width: 100%"
                                                         : "max-width:" + Math.min(500, document.documentElement.clientWidth) + "px")
                                                     .join(" !important;");
-            statusbar.textContent = decodeURI(url.replace("http://", ""));
+            try {
+                statusbar.textContent = decodeURI(url.replace("http://", ""));
+            }
+            catch (uriError) {
+                statusbar.textContent = url;
+            }
 
             // Append it to the document element to avoid problems when someone does
             // document.body.lastChild or similar
