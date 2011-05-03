@@ -22,6 +22,7 @@ function PopupStatusbar() {
             "background: #ddd",
             "color: #000",
             "padding: 2px 4px",
+            "margin: 0",
             "box-sizing: border-box",
             "border: 0 solid #999",
             "border-width: 1px 1px 0 0",
@@ -88,7 +89,7 @@ function PopupStatusbar() {
         clearTimeout(hideTimeoutId);
 
         var ele = document.getElementById(ID);
-        var statusbar = ele || document.createElement("div");
+        var statusbar = ele || document.createElement("statusbar");
         if (this._currentTarget != target) {
             // Not dealing with the same target, remove the element
             this._removeElement();
