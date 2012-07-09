@@ -1,3 +1,5 @@
+#!/bin/bash
+
 VER=$1
 if [ "$VER" = "" ]
 then
@@ -6,6 +8,6 @@ then
 fi
 cp -R src build
 cd build
-sed -i "s/\$VERSION/$VER/" config.xml
+sed -i "" "s/\$VERSION/$VER/" config.xml
 zip -r ../popup-statusbar-$VER.oex *
 rm -r ../build
