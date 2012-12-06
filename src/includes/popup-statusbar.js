@@ -1,12 +1,14 @@
 /**
  * Authors: David Håsäther, <davidh@opera.com>
  *          Jan Henrik Helmers, <janhh@opera.com>
- * Version: 0.1
+ * Version: 0.2
  */
+ 
 function PopupStatusbar() {
     var ID = "_opera_extension_$_popup_statusbar_";
-    var HIDE_TIMEOUT = 300; // ms
-    var EXPAND_TIMEOUT = 1000; // ms
+    var HIDE_TIMEOUT = 400; // ms
+    var SHOW_DELAY = 1000; //ms
+    var EXPAND_TIMEOUT = 700; // ms
     var platform = window.navigator.platform.toLowerCase().slice(0, 3) || "";
     var styles = {
         // Base styling
@@ -72,108 +74,124 @@ function PopupStatusbar() {
 
     var hideTimeoutId = null;
     var expandTimeoutId = null;
+    var delayTimeoutId = null;
 
     this._currentTarget = null;
     this._isExpanded = false;
+    this._isDelayed = false;
 
     this.show = function(event) {
-        var target = event.target;
-        while (target && !/^(?:a|area)$/i.test(target.nodeName)) {
+        var self = this, target = event.target;
+        while (target && !/^(?:a|area|img)$/i.test(target.nodeName))
             target = target.parentNode;
-        }
 
-        if (!target || !target.href) {
-            return;
-        }
-
-        clearTimeout(hideTimeoutId);
-
-        var ele = document.getElementById(ID);
-        var statusbar = ele || document.createElement("statusbar");
-        if (this._currentTarget != target) {
-            // Not dealing with the same target, remove the element
-            this._removeElement();
-
-            var url = target.href;
-            var scheme = url.slice(0, url.indexOf(":"));
-            statusbar.id = ID;
-            statusbar.style.cssText = styles["base"].concat(styles[platform] || [])
-                                                    .concat(styles[scheme] || [])
-                                                    .concat(ele ? "opacity: 1" : "opacity: 0")
-                                                    .concat(
-                                                        this._isExpanded
-                                                        ? "max-width: 100%"
-                                                        : "max-width:" + Math.min(500, document.documentElement.clientWidth) + "px")
-                                                    .join(" !important;");
-            try {
-                statusbar.textContent = decodeURI(url.replace("http://", ""));
-            }
-            catch (uriError) {
-                statusbar.textContent = url;
-            }
-
-            // Append it to the document element to avoid problems when someone does
-            // document.body.lastChild or similar
-            document.documentElement.appendChild(statusbar);
-
-            // If the mouse is over the statusbar, don't show it
-            var box = statusbar.getBoundingClientRect();
-            if (event.clientY > box.top && event.clientX < box.width) {
-                this._removeElement();
-                return;
-            }
-
-            // Fade it in
-            setTimeout(function() {
-                statusbar.style.opacity = "1 !important";
-            }, 0);
-        }
-        this._currentTarget = target;
-
-        // Expand it after a while, Chrome style
-        expandTimeoutId = setTimeout(function() {
-            // Doesn't animate when setting it to "100%"
-            statusbar.style.maxWidth = document.documentElement.clientWidth + "px !important";
-            this._isExpanded = true;
-        }.bind(this), EXPAND_TIMEOUT);
+        if (!target || (!target.href && !target.src)) return;
+        var url = target.href || target.src;
 
         // TODO: do some refactoring here, move stuff out
-
         var removeBound = function(event) {
-            this.hide(event);
+            self.hide(event);
             target.removeEventListener("mouseout", removeBound, false);
-        }.bind(this);
+        }.bind(self);
 
         target.addEventListener("mouseout", removeBound, false);
+        self._isDelayed = true;
+        clearTimeout(delayTimeoutId);
 
-        statusbar.addEventListener("mouseover", this._removeElement.bind(this), false);
+        delayTimeoutId = setTimeout(function() {
+            if (!self._isDelayed) return;
+
+            clearTimeout(hideTimeoutId);
+
+            var ele = document.getElementById(ID),
+                statusbar = ele || document.createElement("statusbar");
+
+            if (self._currentTarget !== target) {
+                // Not dealing with the same target, remove the element
+                self._removeElement();
+
+                var scheme = url.slice(0, url.indexOf(":"));
+                statusbar.id = ID;
+                statusbar.style.cssText = styles["base"].concat(styles[platform] || [])
+                                            .concat(styles[scheme] || [])
+                                            .concat(ele ? "opacity: 1" : "opacity: 0")
+                                            .concat(
+                                                self._isExpanded
+                                                ? "max-width: 100%"
+                                                : "max-width:" + Math.min(500, document.documentElement.clientWidth) + "px")
+                                            .join(" !important;");
+                try {
+                    statusbar.textContent = decodeURI(url.replace("http://", ""));
+                }
+                catch (bug) {
+                    statusbar.textContent = url;
+                }
+
+                // Append it to the document element to avoid problems when someone does
+                // document.body.lastChild or similar
+                document.documentElement.appendChild(statusbar);
+
+                // If the mouse is over the statusbar, don't show it
+                var box = statusbar.getBoundingClientRect();
+                if (event.clientY > box.top && event.clientX < box.width) {
+                    self._removeElement();
+                    return;
+                }
+
+                // Fade it in
+                setTimeout(function() {
+                    statusbar.style.opacity = "1 !important";
+                }, 10);
+            }
+
+            self._currentTarget = target;
+
+            // Expand it after a while, Chrome style
+            expandTimeoutId = setTimeout(function() {
+                // Doesn't animate when setting it to "100%"
+                statusbar.style.maxWidth = document.documentElement.clientWidth + "px !important";
+                self._isExpanded = true;
+            }.bind(self), EXPAND_TIMEOUT);
+
+            statusbar.addEventListener("mouseover", self._removeElement.bind(self), false);
+
+            self._isDelayed = false;
+        }, SHOW_DELAY);
     };
 
     this.hide = function(event) {
+        var self = this;
+        // exit if we didn't execute show function on timeout
+        if (self._isDelayed) {
+            clearTimeout(delayTimeoutId);
+            self._currentTarget = null;
+            return;
+        }
+
         clearTimeout(expandTimeoutId);
         hideTimeoutId = setTimeout(function() {
             // Setting display before removing is a workaround for a reflow bug
             // where the statusbar gets stuck on the page if it's too short.
             var ele = document.getElementById(ID);
-            if (ele) {
-                ele.style.display = "none !important";
-            }
-            setTimeout(this._removeElement.bind(this), 0);
-            this._isExpanded = false;
-        }.bind(this), HIDE_TIMEOUT);
+            if (ele) ele.style.display = "none !important";
+            setTimeout(self._removeElement.bind(self), 0);
+            self._isExpanded = false;
+        }.bind(self), HIDE_TIMEOUT);
     };
 
     this._removeElement = function() {
         var ele = document.getElementById(ID);
         if (ele) {
             ele.parentNode.removeChild(ele);
-            this._currentTarget = null;
+            self._currentTarget = null;
         }
     };
 }
 
 window.addEventListener("DOMContentLoaded", function(event) {
-    // Temporary until Opera has a proper implementation
+    if (window.self !== window.top) return;
+
+     // Temporary until Opera has a proper implementation
     var slice = Array.prototype.slice;
     Function.prototype.bind = function(context) {
         var method = this;
@@ -183,15 +201,13 @@ window.addEventListener("DOMContentLoaded", function(event) {
         };
     };
 
-    // Frames are problematic, don't do anything for the time being
-    if (window != window.top) { return; }
     var statusbar = new PopupStatusbar();
     var show_bound = statusbar.show.bind(statusbar);
-    document.body.addEventListener("mouseover", show_bound, false);
 
+    document.documentElement.addEventListener("mouseover", show_bound, false);
     opera.extension.addEventListener("disconnect", function() {
         statusbar._removeElement();
-        document.body.removeEventListener("mouseover", show_bound, false);
+        document.documentElement.removeEventListener("mouseover", show_bound, false);
     }, false);
 }, false);
 
