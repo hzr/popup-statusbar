@@ -1,8 +1,19 @@
-/**
- * Authors: David Håsäther, <davidh@opera.com>
- *          Jan Henrik Helmers, <janhh@opera.com>
- * Version: 0.2
- */
+// ==UserScript==
+// @name Chrome-like statusbar for Opera
+// @version 2012.12.06
+// @include http*
+// @exclude opera:*
+// @exclude chrome:*
+// @exclude about:*
+// @exclude widget:*
+// @exclude *.jpg
+// @exclude *.jpeg
+// @exclude *.png
+// @exclude *.apng
+// @exclude *.gif
+// @exclude *.svg
+// @exclude *.swf
+// ==/UserScript==
  
 function PopupStatusbar() {
     var ID = "_opera_extension_$_popup_statusbar_";
