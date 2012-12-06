@@ -1,7 +1,7 @@
 Chrome-like statusbar for Opera
 ==========
 
-This extension pops up a statusbar when hovering links, similar like in Chrome. This lets you turn off the native statusbar and save some screen estate[*].
+This extension pops up a statusbar when hovering links, similar like in Chrome. This lets you turn off the native statusbar and save some screen estate.  
 
 FAQ:
 -------

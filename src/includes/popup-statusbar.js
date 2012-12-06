@@ -19,6 +19,7 @@ function PopupStatusbar() {
     var ID = "_opera_extension_$_popup_statusbar_";
     var HIDE_TIMEOUT = 400; // ms
     var SHOW_DELAY = 1000; //ms
+    var SITE = window.location.protocol + '//' + window.location.hostname;
     var EXPAND_TIMEOUT = 700; // ms
     var platform = window.navigator.platform.toLowerCase().slice(0, 3) || "";
     var styles = {
@@ -96,7 +97,7 @@ function PopupStatusbar() {
         var url, target = event.target;
 
         while (target && !/^(?:a|area|img)$/i.test(target.nodeName)) target = target.parentNode;
-        if (!target || !(url = target.href || target.src) || self._currentTarget === target || /^javascript\s*:\s*void\(\d\);?$/i.test(url)) return;
+        if (!target || !(url = target.href || target.src) || self._currentTarget === target || ~url.indexOf(SITE) || /^javascript\s*:\s*void\(\d\);?$/i.test(url)) return;
 
         // TODO: do some refactoring here, move stuff out
         var removeBound = function(event) {
