@@ -75,18 +75,17 @@ function PopupStatusbar() {
     var hideTimeoutId = null;
     var expandTimeoutId = null;
     var delayTimeoutId = null;
+    var self = this;
 
     this._currentTarget = null;
     this._isExpanded = false;
     this._isDelayed = false;
 
     this.show = function(event) {
-        var self = this, target = event.target;
-        while (target && !/^(?:a|area|img)$/i.test(target.nodeName))
-            target = target.parentNode;
+        var url, target = event.target;
 
-        if (!target || (!target.href && !target.src)) return;
-        var url = target.href || target.src;
+        while (target && !/^(?:a|area|img)$/i.test(target.nodeName)) target = target.parentNode;
+        if (!target || !(url = target.href || target.src) || self._currentTarget === target || /^javascript\s*:\s*void\(\d\);?$/i.test(url)) return;
 
         // TODO: do some refactoring here, move stuff out
         var removeBound = function(event) {
@@ -95,6 +94,7 @@ function PopupStatusbar() {
         }.bind(self);
 
         target.addEventListener("mouseout", removeBound, false);
+
         self._isDelayed = true;
         clearTimeout(delayTimeoutId);
 
@@ -106,43 +106,41 @@ function PopupStatusbar() {
             var ele = document.getElementById(ID),
                 statusbar = ele || document.createElement("statusbar");
 
-            if (self._currentTarget !== target) {
-                // Not dealing with the same target, remove the element
-                self._removeElement();
+              // Not dealing with the same target, remove the element
+              self._removeElement();
 
-                var scheme = url.slice(0, url.indexOf(":"));
-                statusbar.id = ID;
-                statusbar.style.cssText = styles["base"].concat(styles[platform] || [])
-                                            .concat(styles[scheme] || [])
-                                            .concat(ele ? "opacity: 1" : "opacity: 0")
-                                            .concat(
-                                                self._isExpanded
-                                                ? "max-width: 100%"
-                                                : "max-width:" + Math.min(500, document.documentElement.clientWidth) + "px")
-                                            .join(" !important;");
-                try {
-                    statusbar.textContent = decodeURI(url.replace("http://", ""));
-                }
-                catch (bug) {
-                    statusbar.textContent = url;
-                }
+              var scheme = url.slice(0, url.indexOf(":"));
+              statusbar.id = ID;
+              statusbar.style.cssText = styles["base"].concat(styles[platform] || [])
+                                          .concat(styles[scheme] || [])
+                                          .concat(ele ? "opacity: 1" : "opacity: 0")
+                                          .concat(
+                                              self._isExpanded
+                                              ? "max-width: 100%"
+                                              : "max-width:" + Math.min(500, document.documentElement.clientWidth) + "px")
+                                          .join(" !important;");
+              try {
+                  statusbar.textContent = decodeURI(url.replace("http://", ""));
+              }
+              catch (bug) {
+                  statusbar.textContent = url;
+              }
 
-                // Append it to the document element to avoid problems when someone does
-                // document.body.lastChild or similar
-                document.documentElement.appendChild(statusbar);
+              // Append it to the document element to avoid problems when someone does
+              // document.body.lastChild or similar
+              document.documentElement.appendChild(statusbar);
 
-                // If the mouse is over the statusbar, don't show it
-                var box = statusbar.getBoundingClientRect();
-                if (event.clientY > box.top && event.clientX < box.width) {
-                    self._removeElement();
-                    return;
-                }
+              // If the mouse is over the statusbar, don't show it
+              var box = statusbar.getBoundingClientRect();
+              if (event.clientY > box.top && event.clientX < box.width) {
+                  self._removeElement();
+                  return;
+              }
 
-                // Fade it in
-                setTimeout(function() {
-                    statusbar.style.opacity = "1 !important";
-                }, 10);
-            }
+              // Fade it in
+              setTimeout(function() {
+                  statusbar.style.opacity = "1 !important";
+              }, 10);
 
             self._currentTarget = target;
 
@@ -153,15 +151,15 @@ function PopupStatusbar() {
                 self._isExpanded = true;
             }.bind(self), EXPAND_TIMEOUT);
 
-            statusbar.addEventListener("mouseover", self._removeElement.bind(self), false);
-
             self._isDelayed = false;
         }, SHOW_DELAY);
     };
 
     this.hide = function(event) {
-        var self = this;
         // exit if we didn't execute show function on timeout
+        self._isExpanded = false;
+        self._currentTarget = null;
+
         if (self._isDelayed) {
             clearTimeout(delayTimeoutId);
             self._currentTarget = null;
@@ -169,37 +167,22 @@ function PopupStatusbar() {
         }
 
         clearTimeout(expandTimeoutId);
-        hideTimeoutId = setTimeout(function() {
-            // Setting display before removing is a workaround for a reflow bug
-            // where the statusbar gets stuck on the page if it's too short.
-            var ele = document.getElementById(ID);
-            if (ele) ele.style.display = "none !important";
-            setTimeout(self._removeElement.bind(self), 0);
-            self._isExpanded = false;
-        }.bind(self), HIDE_TIMEOUT);
+        hideTimeoutId = setTimeout(self._removeElement, HIDE_TIMEOUT);
     };
 
     this._removeElement = function() {
         var ele = document.getElementById(ID);
         if (ele) {
+            // Setting display before removing is a workaround for a reflow bug
+            // where the statusbar gets stuck on the page if it's too short.
+            ele.style.display = "none !important";
             ele.parentNode.removeChild(ele);
-            self._currentTarget = null;
         }
     };
 }
 
 window.addEventListener("DOMContentLoaded", function(event) {
     if (window.self !== window.top) return;
-
-     // Temporary until Opera has a proper implementation
-    var slice = Array.prototype.slice;
-    Function.prototype.bind = function(context) {
-        var method = this;
-        var args = slice.call(arguments, 1);
-        return function() {
-            return method.apply(context, args.concat(slice.call(arguments, 0)));
-        };
-    };
 
     var statusbar = new PopupStatusbar();
     var show_bound = statusbar.show.bind(statusbar);
