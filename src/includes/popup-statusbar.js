@@ -18,7 +18,7 @@
 function PopupStatusbar() {
     var ID = "_opera_extension_$_popup_statusbar_";
     var HIDE_TIMEOUT = 400; // ms
-    var SHOW_DELAY = 1000; //ms
+    var SHOW_DELAY = 1500; //ms
     var SITE = window.location.protocol + '//' + window.location.hostname;
     var EXPAND_TIMEOUT = 700; // ms
     var platform = window.navigator.platform.toLowerCase().slice(0, 3) || "";
@@ -32,22 +32,24 @@ function PopupStatusbar() {
             "bottom: 0",
             "left: 0",
             "height: auto",
-            "font: 13px sans-serif",
-            "background: #ddd",
+            "background: #eee",
             "color: #000",
-            "padding: 2px 4px",
+            "padding: 2px 6px",
             "margin: 0",
             "box-sizing: border-box",
-            "border: 0 solid #999",
+            "border-top: 0 solid #ccc",
+            "border-right: 0 solid #ccc",
             "border-width: 1px 1px 0 0",
             "border-top-right-radius: 4px",
             "overflow: hidden",
             "white-space: nowrap",
+            "line-height: 1.7em",
             "text-overflow: ellipsis",
             "-o-transition: opacity .3s, max-width .3s",
             /*"transition: opacity .3s, max-width .3s",*/
-            "text-shadow: 0 1px rgba(255, 255, 255, .5)",
-            "direction: ltr"
+            "text-shadow: rgba(250, 250, 250, .5) 0px 1px 0;",
+            "direction: ltr",
+            "font-size: .8em",
         ],
 
         // Platform specific styling, lots of guesswork going on here
@@ -58,23 +60,22 @@ function PopupStatusbar() {
             "color: #333"
         ],
         "win": [
-            "font: 12px 'Segoe UI', Tahoma",
+            "font-family: Calibri, Tahoma;",
             "border-color: #798999",
-            "background: #e0ebf8",
+            "background: #ccc",
             "color: #0c0c0d",
-            "text-shadow: 0 1px #f2f7fc"
         ],
         "mac": [
-            "font: 11px 'Lucida Grande'",
+            "font-family: 'Lucida Grande', Verdana, sans-serif;",
             "color: #222",
             "box-shadow: 1px -1px 1px rgba(0, 0, 0, .1)"
         ],
 
         // Scheme specific styling
         "https": [
-            "background: #fc5",
+            "background: #FCF9BD",
             "color: #431",
-            "border-color: #431"
+            "border-color: #E3E1AB"
         ],
         "ftp": [
         ],
@@ -97,7 +98,7 @@ function PopupStatusbar() {
         var url, target = event.target;
 
         while (target && !/^(?:a|area|img)$/i.test(target.nodeName)) target = target.parentNode;
-        if (!target || !(url = target.href || target.src) || self._currentTarget === target || ~url.indexOf(SITE) || /^javascript\s*:\s*void\(\d\);?$/i.test(url)) return;
+        if (!target || !(url = target.href || target.src) || self._currentTarget === target || ~url.indexOf(SITE) || /^#|(?:javascript\s*:\s*void\(\d\);?)$/i.test(url)) return;
 
         // TODO: do some refactoring here, move stuff out
         var removeBound = function(event) {
@@ -132,7 +133,7 @@ function PopupStatusbar() {
                                               : "max-width:" + Math.min(500, document.documentElement.clientWidth) + "px")
                                           .join(" !important;");
               try {
-                  statusbar.textContent = decodeURI(url.replace("http://", ""));
+                  statusbar.textContent = decodeURI(url.replace(/^https?:\/\//i, ""));
               }
               catch (bug) {
                   statusbar.textContent = url;
